@@ -50,6 +50,7 @@ function Registration() {
         });
         if (response.data.status === "success") {
           successToast("Registration successful");
+          window.location.href = "/login"
           
         } if (response.data.status === "fail"){
           if (response.data.data === "User already exists") {
