@@ -1,0 +1,78 @@
+Basic reset for margin and padding * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Style for the big container */
+.Big_container {
+  font-family: Arial, sans-serif;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header styling */
+header {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Form styling */
+form {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Style for input fields and labels */
+.input_field {
+  margin-bottom: 15px;
+}
+
+.input_field label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.input_field input[type="text"],
+.input_field input[type="email"],
+.input_field input[type="number"],
+.input_field input[type="file"] {
+  width: calc(100% - 12px);
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Button styling */
+.next_Btn {
+  background-color: #ff00cc;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.next_Btn:hover {
+  background-color: #0056b3;
+}
+
+/* Title and section styling */
+.title_name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  display: block;
+}

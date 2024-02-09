@@ -1,0 +1,65 @@
+
+
+
+/* Style for the card container */
+.carListCard {
+  /* margin-top: 100px; */
+  width: 800px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  margin-top: 20px;
+}
+
+/* Style for the upper part (Google Map) */
+.carList-upper-part {
+  height: 400px;
+  background-color: #f0f0f0;
+}
+
+/* Style for the lower part (Car list) */
+.carList-lower-part {
+  padding: 10px;
+  display: flex;
+}
+
+/* Style for the car list */
+.car-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Style for individual car items */
+.car-item {
+  width: 770px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* Style for car image */
+.car-image {
+  width: 100px;
+  height: auto;
+  margin-right: 10px;
+  border-radius: 5px;
+}
+
+
+.BookNowbutton {
+  text-decoration: none;
+  color: white;
+}
+.BookNowbutton {
+  background-color: #cb0c9f; /* Green */
+  border: none;
+  color: white;
+  font-size: 14px;
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
