@@ -215,52 +215,52 @@ exports.RecoverResetPassword = async (req, res) => {
 }
 
 
-// exports.makeInstructor = async (req, res) => {
-//   const userEmail = req.body.email;
+exports.makeInstructor = async (req, res) => {
+  const userEmail = req.body.email;
 
-//   try {
-//     // Use findOne instead of find
-//     const user = await userModel.findOne({ email: userEmail }).exec();
+  try {
+    // Use findOne instead of find
+    const user = await userModel.findOne({ email: userEmail }).exec();
 
-//     // Check if the user exists
-//     if (!user) {
-//       return res.status(400).json({ error: 'User not found' });
-//     }
+    // Check if the user exists
+    if (!user) {
+      return res.status(400).json({ error: 'User not found' });
+    }
 
-//     //create customer 
-//     const customer = await stripe.customers.create({
-//       email: user.email,
-//     });
-//     // Create a Checkout session
-//     const session = await stripe.checkout.sessions.create({
-//       payment_method_types: ['card'],
-//       line_items: [{
-//         price: 'price_1OFGWcE7CJNVLFNHGe2cePE8', // Replace with your actual Price ID
-//         quantity: 1,
-//       }],
+    //create customer 
+    const customer = await stripe.customers.create({
+      email: user.email,
+    });
+    // Create a Checkout session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price: 'price_1OFGWcE7CJNVLFNHGe2cePE8', // Replace with your actual Price ID
+        quantity: 1,
+      }],
       
-//       mode: 'payment',
-//       success_url: process.env.STRIPE_SUCCESS_URL,
-//       cancel_url: process.env.STRIPE_CANCEL_URL,
-//       customer: customer.id,
-//     });
+      mode: 'payment',
+      success_url: process.env.STRIPE_SUCCESS_URL,
+      cancel_url: process.env.STRIPE_CANCEL_URL,
+      customer: customer.id,
+    });
     
-//     await user.save();
+    await user.save();
 
-//     console.log(session)
-//     // Update the user's payment-related fields
-//     user.stripeCustomerId = session.customer;
-//     // You may want to update other fields like stripeAccountId if you're using Express accounts
+    console.log(session)
+    // Update the user's payment-related fields
+    user.stripeCustomerId = session.customer;
+    // You may want to update other fields like stripeAccountId if you're using Express accounts
 
-//     // Save the updated user
-//     await user.save();
+    // Save the updated user
+    await user.save();
 
-//     res.json({ sessionId: session.id });
-//   } catch (err) {
-//     console.error("MAKE INSTRUCTOR ERROR: ", err);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// };
+    res.json({ sessionId: session.id });
+  } catch (err) {
+    console.error("MAKE INSTRUCTOR ERROR: ", err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 
 
 
