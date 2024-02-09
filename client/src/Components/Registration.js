@@ -22,6 +22,8 @@ function Registration() {
     let lastName = lastNameRef.value;
     let mobile = mobileRef.value;
     let password = passwordRef.value;
+    // console.log(password)
+    // return;
     let photo = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwAQAAAAB/ecQqAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAAmJLR0QAAKqNIzIAAAAJcEhZcwAADWAAAA1gAe5jgMoAAAAHdElNRQfnAhEOCziUmK5fAAAADUlEQVQY02NgGAXUBAABUAABp+LaFgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyMy0wMi0xN1QxNDoxMTo1NiswMDowMGPF+jUAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjMtMDItMTdUMTQ6MTE6NTYrMDA6MDASmEKJAAAAGXRFWHRTb2Z0d2FyZQB3d3cuaW5rc2NhcGUub3Jnm+48GgAAAABJRU5ErkJggg=="
 
     if (isEmailValid(email)) {
@@ -33,7 +35,7 @@ function Registration() {
     } else if (isMobile(mobile)) {
       errorToast("Please enter valid mobile number");
     } else if(isPasswordValid(password)) {
-      errorToast("Please enter atleast 8 character password");
+      errorToast("Please enter atleast 1 digit, one letter and will password will be 8 characters long");
     } else {
       RegistrationRequest(
         email,
@@ -45,7 +47,9 @@ function Registration() {
         if (result === true) {
           navigate("/Login");
         }
-      });
+      }).catch((err)=>{
+        errorToast(err.message)
+      })
     }
   };
 

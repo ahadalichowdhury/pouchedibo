@@ -25,7 +25,7 @@ router.post("/profileUpdate", authMiddleware, profileUpdate);
 router.get("/RecoverVerifyEmail/:email", RecoverVerifyEmail)
 router.get("/RecoverVerifyOTP/:email/:otp", recoverOTPVerify)
 router.post("/RecoverResetPassword", RecoverResetPassword)
-router.post("/make-instructor", makeInstructor);
+
 
 //history controller
 router.post("/createHistory",authMiddleware, historyController.createHistory);

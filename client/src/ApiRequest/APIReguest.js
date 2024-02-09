@@ -35,25 +35,22 @@ export function RegistrationRequest(
       //call end
       store.dispatch(HideLoader());
       if (res.data["status"] === "fail") {
-        if (res.status === 200) {
-          if (res.data["data"]["keyPattern"]["email"] === 1) {
-            errorToast("Email Already Exist");
-            return false;
-          } else {
-            errorToast("something Went Wrong");
-            return false;
-          }
+        if (res.data["message"] === "user already exist") {
+          errorToast("User Already Exists");
+          return false;
+        } else {
+          errorToast("Something Went Wrong");
+          return false;
         }
       } else {
-        successToast("registration successfull");
+        successToast("Registration Successful");
         return true;
       }
     })
     .catch((err) => {
       //call end
       store.dispatch(HideLoader());
-      errorToast("something Went Wrong");
-        errorToast(err.message);
+      errorToast("Something Went Wrong");
       return false;
     });
 }
