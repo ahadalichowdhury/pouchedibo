@@ -4,10 +4,12 @@ import {
   isEmailValid,
   isEmpty,
   isMobile,
-  isPasswordValid
+  isPasswordValid,
+  successToast
 } from "../Helper/FormHelper";
 import { RegistrationRequest } from "../ApiRequest/APIReguest";
 import { NavLink, useNavigate } from "react-router-dom";
+import axios from "axios";
 function Registration() {
   let navigate = useNavigate();
   let emailRef,
@@ -16,7 +18,7 @@ function Registration() {
     mobileRef,
     passwordRef = useRef();
 
-  const onRegistration = () => {
+  const onRegistration = async () => {
     let email = emailRef.value;
     let firstName = firstNameRef.value;
     let lastName = lastNameRef.value;
@@ -37,19 +39,31 @@ function Registration() {
     } else if(isPasswordValid(password)) {
       errorToast("Please enter atleast 1 digit, one letter and will password will be 8 characters long");
     } else {
-      RegistrationRequest(
-        email,
-        firstName,
-        lastName,
-        mobile,
-        password, photo
-      ).then((result) => {
-        if (result === true) {
-          navigate("/Login");
+      try {
+        const response = await axios.post("http://localhost:8000/api/v1/registration", {
+          email,
+          firstName,
+          lastName,
+          mobile,
+          password,
+          photo
+        });
+        if (response.data.status === "success") {
+          successToast("Registration successful");
+          
+        } if (response.data.status === "fail"){
+          if (response.data.data === "User already exists") {
+            errorToast("User already exists");
+            return;
+          } else {
+            errorToast(response.data.data || "Something went wrong");
+          }
         }
-      }).catch((err)=>{
-        errorToast(err.message)
-      })
+      } catch (error) {
+        // Handle network error or other issues
+        console.error("Registration error:", error.message);
+        errorToast("User Already Exists");
+      }
     }
   };
 

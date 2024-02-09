@@ -8,32 +8,36 @@ const stripe =  require('stripe')('sk_test_51OEnDEE7CJNVLFNHoP5cSxNylu7FnRkAKN1p
 
 
 //registration
-exports.registration = (req, res) => {
-  let reqBody = req.body;
-  let email = req.body.email;
-  console.log(reqBody);
-  
-  const user = userModel.findOne({email: email})
-  if(user){
-    return res.status(200).json({
-      status: "fail",
-      message: "user already exist",
-    });
-  }
-  userModel.create(reqBody, (err, data) => {
-    if (err) {
-      res.status(200).json({
+exports.registration = async (req, res) => {
+  try {
+    const reqBody = req.body;
+    const email = req.body.email;
+
+    // console.log(email);
+    
+    const user = await userModel.findOne({ email: email });
+    console.log(user);
+    
+    if (user) {
+      return res.status(500).json({
         status: "fail",
-        data: err,
-      });
-    } else {
-      res.status(200).json({
-        status: "success",
-        data: data,
+        data: "User already exists",
       });
     }
-  });
+
+    const newUser = await userModel.create(reqBody);
+    res.status(200).json({
+      status: "success",
+      data: newUser,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: err.message || "Something went wrong",
+    });
+  }
 };
+
 
 //user login
 

@@ -18,7 +18,6 @@ export function RegistrationRequest(
   password,
   photo
 ) {
-  //call start
   store.dispatch(ShowLoader());
   let URL = BaseURL + "/registration";
   let PostBody = {
@@ -32,28 +31,25 @@ export function RegistrationRequest(
   return axios
     .post(URL, PostBody)
     .then((res) => {
-      //call end
       store.dispatch(HideLoader());
-      if (res.data["status"] === "fail") {
-        if (res.data["message"] === "user already exist") {
-          errorToast("User Already Exists");
-          return false;
-        } else {
-          errorToast("Something Went Wrong");
-          return false;
+      if (res.data.status === "fail") {
+         if (res.status === 500 && res.data.data === "User already exists") {
+          errorToast("Email Already Exist");
         }
+        return false;
       } else {
-        successToast("Registration Successful");
+        successToast("Registration successful");
         return true;
       }
     })
     .catch((err) => {
-      //call end
       store.dispatch(HideLoader());
-      errorToast("Something Went Wrong");
+      errorToast("something Went Wrong");
+      console.error(err);
       return false;
     });
 }
+
 export function loginRequest(email, password) {
   store.dispatch(ShowLoader());
   let URL = BaseURL + "/login";
