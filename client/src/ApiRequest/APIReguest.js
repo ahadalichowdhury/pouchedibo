@@ -50,12 +50,13 @@ export function RegistrationRequest(
     });
 }
 
-export function loginRequest(email, password) {
+export function loginRequest(email, password, currentToken) {
   store.dispatch(ShowLoader());
   let URL = BaseURL + "/login";
   let PostBody = {
     email: email,
     password: password,
+    currentToken:currentToken
   };
 
   return axios

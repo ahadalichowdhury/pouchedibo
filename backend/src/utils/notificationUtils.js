@@ -1,5 +1,6 @@
 const { initializeApp, applicationDefault } = require('firebase-admin/app');
-const { getMessaging } = require('firebase-admin/messaging')
+const { getMessaging } = require('firebase-admin/messaging');
+const Notification = require('../model/notificationModel');
 require('dotenv').config();
 
 
@@ -20,7 +21,7 @@ const sendMultiplePushNotification = async (user_id, message) => {
       const pushMessage = {
         notification: {
           body: message,
-          title: "Push Message"
+          title: "Book Now?"
         },
         tokens,
       }

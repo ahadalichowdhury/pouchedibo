@@ -31,7 +31,11 @@ const driverData = mongoose.Schema(
     history: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'History',
-    },   
+    }, 
+    user:{
+      type : mongoose.Schema.Types.ObjectId,
+      ref:'User'
+    },  
     createdDate: { type: Date, default: Date.now() },
   },
   {

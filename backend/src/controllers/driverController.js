@@ -16,7 +16,10 @@ exports.createDriverProfile = async (req, res) => {
       return res.status(401).json("Failed to create Driver Profile");
     }
     user.Driver = driverProfile._id;
+    
     await user.save();
+    driverProfile.user = user._id;
+    await driverProfile.save();
     res.status(201).json({ success: true, data: driverProfile });
   } catch (error) {
     // Handle any errors
