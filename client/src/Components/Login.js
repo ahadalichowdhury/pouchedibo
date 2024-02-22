@@ -57,6 +57,8 @@ function Login() {
           const result = await loginRequest(email, password, currentToken);
           if (result === true) {
             window.location.href = "/";
+          }else {
+            errorToast("Please enter valid email address and password")
           }
         } catch (error) {
           console.error('Error logging in:', error);

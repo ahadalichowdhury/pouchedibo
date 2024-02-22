@@ -4,7 +4,7 @@ const {
   registration,
   profileUpdate,
   login,
-  profileDetails, RecoverVerifyEmail, recoverOTPVerify, RecoverResetPassword, makeInstructor,sendNotificationForAvailableDriver
+  profileDetails, RecoverVerifyEmail, recoverOTPVerify, RecoverResetPassword, acceptUser,makeInstructor,sendNotificationForAvailableDriver,findSingleUserFromId,ownProfileDetail,approveRideFromUser, declineRideFromUser
 } = require("../controllers/userController");
 const historyController = require("../controllers/historyController")
 const driverController = require("../controllers/driverController")
@@ -22,6 +22,7 @@ router.post('/upload', upload.single("file"), uploadImage);
 router.post("/registration", registration);
 router.post("/login", login);
 router.post("/profileUpdate", authMiddleware, profileUpdate);
+router.get("/userInfo/:userId", findSingleUserFromId)
 router.get("/RecoverVerifyEmail/:email", RecoverVerifyEmail)
 router.get("/RecoverVerifyOTP/:email/:otp", recoverOTPVerify)
 router.post("/RecoverResetPassword", RecoverResetPassword)
@@ -33,8 +34,12 @@ router.post("/createHistory",authMiddleware, historyController.createHistory);
 
 
 router.get("/profileDetails", authMiddleware, profileDetails);
+router.get("/ownProfileDetails", authMiddleware, ownProfileDetail);
+router.put("/approve-ride/:userId", approveRideFromUser);
+router.put("/decline-ride/:userId", declineRideFromUser);
 router.post("/createDriverProfile", authMiddleware, driverController.createDriverProfile);
 router.get("/getProfile", authMiddleware, driverController.getUserData)
+router.put("/driver-mode", authMiddleware, driverController.updateAvailableToggle)
 
 
 router.post('/vehicles', vehicleController.createVehicle);
@@ -43,5 +48,5 @@ router.post('/vehicles', vehicleController.createVehicle);
 router.get('/vehicles', vehicleController.getAllVehicles);
 
 router.put('/sendNotification', authMiddleware,sendNotificationForAvailableDriver);
-
+router.put('/acceptUser/:userId',authMiddleware, acceptUser);
 module.exports = router;

@@ -4,32 +4,39 @@ const OTPModel = require("../model/OTPModel");
 const SendEmailUtils = require("../utilis/SendEmailUtils");
 const queryString = require("queryString");
 const notificationModel = require("../model/notificationModel");
-const { sendMultiplePushNotification } = require("../utils/notificationUtils");
+const { sendMultiplePushNotification, sendMultipleForApproveAndCancelPushNotification } = require("../utils/notificationUtils");
 const driverModel = require("../model/driverModel");
 const stripe = require("stripe")(
   "sk_test_51OEnDEE7CJNVLFNHoP5cSxNylu7FnRkAKN1pXTip35CrjKIBmc2CQQz8abdv57gtfRQmNZJlaH5z0KQwg5lQ7nwV006n7WEbsr"
 );
+const bcrypt = require('bcrypt');
 
 //registration
 exports.registration = async (req, res) => {
   try {
     const reqBody = req.body;
     const email = req.body.email;
-
-    // console.log(email);
+    const password = req.body.password;
 
     const user = await userModel.findOne({ email: email });
-    console.log(user);
 
     if (user) {
-      return res.status(500).json({
+      return res.status(400).json({
         status: "fail",
         data: "User already exists",
       });
     }
 
-    const newUser = await userModel.create(reqBody);
-    res.status(200).json({
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user with the hashed password
+    const newUser = await userModel.create({
+      ...reqBody,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({
       status: "success",
       data: newUser,
     });
@@ -50,10 +57,23 @@ exports.login = async (req, res) => {
     let currentToken = req.body.currentToken;
     console.log(currentToken);
 
-    // Wait for the userModel.aggregate() operation to complete
+    // Find user by email
+    const user = await userModel.findOne({ email: email });
+
+    if (!user) {
+      return res.status(401).json({ status: "unauthorized" });
+    }
+
+    // Compare passwords
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ status: "unauthorized" });
+    }
+
     const data = await userModel.aggregate([
       {
-        $match: { email: email, password: password },
+        $match: { email: email },
       },
       {
         $project: {
@@ -70,19 +90,18 @@ exports.login = async (req, res) => {
       },
     ]);
 
-    // console.log(data[0]._id)
     if (data.length > 0) {
       let Payload = {
         exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
         data: data[0]["email"],
       };
       let token = jwt.sign(Payload, "ahadalichowdhury");
-      // console.log("login user data", data[0]);
+      
+      // Save notification token
       await notificationModel.create({
         user_id: data[0]._id,
-        fcm_token: currentToken
+        fcm_token: currentToken,
       });
-
 
       res.status(200).json({ status: "success", token: token, data: data[0] });
     } else {
@@ -92,6 +111,7 @@ exports.login = async (req, res) => {
     res.status(400).json({ status: "fail", data: error.message });
   }
 };
+
 
 //profileUpdate
 
@@ -139,7 +159,85 @@ exports.profileDetails = (req, res) => {
     }
   );
 };
+exports.ownProfileDetail = async (req, res) => {
+  const email = req.headers["email"];
+  try {
+    const user = await userModel
+      .findOne({ email: email })
+      .populate("request.user");
 
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+    return res.status(200).json({ data: user });
+  } catch (error) {}
+};
+exports.approveRideFromUser = async (req, res) => {
+  const userId = req.params.userId;
+  const {driverId} = req.body;
+  try {
+    const user = await userModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          "request.isAccepted": false,
+          $unset: { "request.user": "" },
+        },
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "fail", message: "User not found" });
+    }
+
+    await sendMultipleForApproveAndCancelPushNotification(driverId, "Your ride request has been approved")
+    res
+      .status(200)
+      .json({
+        status: "success",
+        message: "Ride request updated successfully",
+      });
+  } catch (error) {
+    console.error("Error approving ride from user:", error);
+    res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
+exports.declineRideFromUser = async (req, res) => {
+  const userId = req.params.userId;
+  const {driverId} = req.body;
+  try {
+    const user = await userModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          "request.isAccepted": false,
+          $unset: { "request.user": "" },
+        },
+      },
+      { new: true }
+    );
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "fail", message: "User not found" });
+    }
+
+    await sendMultipleForApproveAndCancelPushNotification(driverId, "Your ride request has been decline")
+    res
+      .status(200)
+      .json({
+        status: "success",
+        message: "Ride request updated successfully",
+      });
+  } catch (error) {
+    console.error("Error approving ride from user:", error);
+    res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+};
 exports.RecoverVerifyEmail = async (req, res) => {
   let email = req.params.email;
   //otp code genarate
@@ -172,6 +270,24 @@ exports.RecoverVerifyEmail = async (req, res) => {
   } catch (err) {
     res.status(200).json({ status: "fail", data: err });
   }
+};
+
+exports.findSingleUserFromId = async (req, res) => {
+  const id = req.params.userId;
+  try {
+    const user = await userModel.findById(id);
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "user not found",
+      });
+    }
+    return res.status(200).json({
+      status: "success",
+      message: "user found",
+      data: user,
+    });
+  } catch (error) {}
 };
 
 exports.recoverOTPVerify = async (req, res) => {
@@ -284,23 +400,34 @@ exports.makeInstructor = async (req, res) => {
 };
 
 exports.sendNotificationForAvailableDriver = async (req, res) => {
-  const { vehicleId } = req.body;
+  const { vehicleId, senderUserId, startLocation, endLocation } = req.body;
 
   try {
+    // console.log(userId)
     // Find the driver documents with the given vehicleId
-    const drivers = await driverModel.find({ vehicleType: vehicleId });
-    
+    const drivers = await driverModel.find({
+      vehicleType: vehicleId,
+      driver_mode: true,
+    });
+    // console.log(drivers)
+    // return;
+
     if (!drivers || drivers.length === 0) {
-      return res.status(404).json({ message: "Drivers not found for the given vehicle ID" });
+      return res
+        .status(403)
+        .json({ message: "Drivers not found for the given vehicle ID" });
     }
 
     // Extract the user IDs from the drivers
-    const userIds = drivers.map(driver => driver.user);
-   
+    const userIds = drivers.map((driver) => driver.user);
 
     // Send notifications to users with the retrieved user IDs
     for (const userId of userIds) {
-      await sendMultiplePushNotification(userId, "Notification message here");
+      await sendMultiplePushNotification(
+        userId,
+        `Are Your want to ride ${startLocation} to ${endLocation}             `,
+        senderUserId
+      );
     }
 
     res.status(200).json({ message: "Notifications sent successfully" });
@@ -310,5 +437,26 @@ exports.sendNotificationForAvailableDriver = async (req, res) => {
   }
 };
 
-
-
+exports.acceptUser = async (req, res) => {
+  const userId = req.params.userId;
+  const { isAccepted } = req.body;
+  const email = req.headers.email;
+  console.log(email);
+  try {
+    const driverUser = await userModel.findOne({ email: email });
+    if (!driverUser) {
+      return res.status(403).json({ message: "Your Profile is not found" });
+    }
+    const user = await userModel.findByIdAndUpdate(
+      userId,
+      { "request.isAccepted": isAccepted, "request.user": driverUser._id },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ success: true, message: "User accepted successfully", user });
+  } catch (error) {
+    console.error("Error accepting user:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

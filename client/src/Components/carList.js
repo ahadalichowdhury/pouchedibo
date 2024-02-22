@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import mapboxgl from "mapbox-gl";
 import polyline from "@mapbox/polyline";
-import Car_image1 from "../assets/images/car1.jpg";
+import { getProfileRequest } from "../ApiRequest/APIReguest";
+import { errorToast, successToast } from "../Helper/FormHelper";
 
 const CarList = () => {
   const [map, setMap] = useState(null);
@@ -163,9 +164,62 @@ const CarList = () => {
     fetchData();
   }, []);
 
-  const handleBookNow = (carId) => {
-    console.log("Clicked 'Book Now' for car with ID:", carId);
-    // You can perform further actions with the car ID here
+  const token = localStorage.getItem("token");
+  const [userId, setUserId] = useState(null);
+  console.log(userId);
+  //get profile info
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await axios
+          .get("http://localhost:8000/api/v1/profileDetails", {
+            headers: {
+              token: `${token}`,
+              "Content-Type": "application/json",
+            },
+          })
+          .then((res) => {
+            console.log(res.data.data[0]._id);
+            setUserId(res.data.data[0]._id);
+          });
+      } catch (error) {
+        errorToast(error.message);
+      }
+    };
+
+    fetchData();
+  }, []);
+  const handleBookNow = async (carId, carName) => {
+    try {
+      console.log("Clicked 'Book Now' for car with ID:", carId);
+
+      console.log("user id", userId);
+      const payload = {
+        vehicleId: carId,
+        senderUserId: userId,
+        startLocation,
+        endLocation,
+      };
+
+      const response = await axios
+        .put("http://localhost:8000/api/v1/sendNotification", payload, {
+          headers: {
+            token: `${token}`,
+            "Content-Type": "application/json",
+          },
+        })
+        .then((res) => {
+          // console.log("Notification sent successfully:", response.data);
+          successToast(
+            `Successfully sent the notification  ${carName} for availabe driver`
+          );
+          setTimeout(() => {
+            window.location.href = "/senderWaiting";
+          }, 2000);
+        });
+    } catch (error) {
+      errorToast("driver is not available for this type of car");
+    }
   };
   return (
     <div className="carListCard">
@@ -199,7 +253,12 @@ const CarList = () => {
                 <span>{car.vehicleName}</span>
               </div>
               <div>
-                <button className="BookNowbutton" onClick={()=> handleBookNow(car._id)}>Book Now</button>
+                <button
+                  className="BookNowbutton"
+                  onClick={() => handleBookNow(car._id, car.vehicleName)}
+                >
+                  Book Now
+                </button>
               </div>
             </div>
           ))}

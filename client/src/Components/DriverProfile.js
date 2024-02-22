@@ -7,6 +7,7 @@ import axios from "axios";
 
 function DriverProfile() {
   const [driverData, setDriverData] = useState(null);
+  console.log("driver profile loaded", driverData?.driver_mode)
 
   // console.log("user data", userData);
 
@@ -52,6 +53,38 @@ function DriverProfile() {
     });
   };
 
+  //for toggle
+  const toggleRef = useRef(null);
+
+  const handleToggleChange = async () => {
+    const newValue = toggleRef.current.checked;
+    console.log("New toggle value:", newValue);
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.put(
+        "http://localhost:8000/api/v1/driver-mode",
+        {
+          newMode: newValue,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            token: `${token}`,
+          },
+        }
+      ).then(res=>{
+        window.location.href = "/settings/driver"
+      })
+
+      console.log("Toggle update response:", response.data);
+      // Handle response if needed
+    } catch (error) {
+      console.error("Error updating toggle:", error);
+      // Handle error if needed
+    }
+  };
+
   return (
     <div className="driver-Profile-Details">
       <div className="container-fluid">
@@ -61,9 +94,14 @@ function DriverProfile() {
         >
           <p>active driver mode</p>
           <div className="toggleBtn">
-            <label class="switch">
-              <input type="checkbox" />
-              <span class="slider round"></span>
+            <label className="switch">
+              <input
+                type="checkbox"
+                ref={toggleRef}
+                checked={driverData?.driver_mode}
+                onChange={handleToggleChange}
+              />
+              <span className="slider round"></span>
             </label>
           </div>
         </div>

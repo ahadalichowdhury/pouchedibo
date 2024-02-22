@@ -16,7 +16,10 @@ import DriverProfilePage from './pages/DriverProfilePage';
 import UploadDriverInfoPage from './pages/UploadDriverInfoPage';
 import CarListPage from './pages/carListPage';
 import Testing from './pages/Testing';
+import AcceptInvitationPage from './pages/AcceptInvitationPage';
+import SenderWaitingPage from './pages/SenderWaitingPage';
 function App() {
+  
  if(getToken()){
   return(
     <BrowserRouter>
@@ -29,7 +32,8 @@ function App() {
         <Route exact path="/carList" element={<CarListPage />} />
         <Route exact path="/settings/Create" element={<BecomeDriverPage />} />
         <Route exact path="/settings/driver" element={<DriverProfilePage />} />
-        <Route exact path="/testing" element={<Testing />} />
+        <Route exact path="/accept-invitation/:userId" element={<AcceptInvitationPage />} />
+        <Route exact path="/senderWaiting" element={<SenderWaitingPage />} />
       </Routes>
     </BrowserRouter>
   )

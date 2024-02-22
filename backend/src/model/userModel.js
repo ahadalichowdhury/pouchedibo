@@ -33,9 +33,19 @@ const userData = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Driver',
     },
-    history: {
+    history: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: 'History',
+    }],
+    request: {
+      isAccepted: {
+        type: Boolean,
+        default: false
+      },
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "user"
+      }
     },
     
     createdDate: { type: Date, default: Date.now() },

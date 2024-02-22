@@ -35,7 +35,11 @@ const driverData = mongoose.Schema(
     user:{
       type : mongoose.Schema.Types.ObjectId,
       ref:'User'
-    },  
+    },
+    driver_mode:{
+      type: Boolean,
+      default: false,
+    },
     createdDate: { type: Date, default: Date.now() },
   },
   {

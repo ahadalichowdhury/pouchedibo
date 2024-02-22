@@ -28,7 +28,7 @@ exports.createHistory = async (req, res) => {
     // Save the history entry to the database
     const history = await newHistory.save();
 
-    user.history = history._id;
+    user.history.push( history._id)
 
     return res.status(201).json({ message: 'History entry created successfully.', history: newHistory });
   } catch (error) {
