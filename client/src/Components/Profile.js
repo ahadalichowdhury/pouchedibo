@@ -85,7 +85,7 @@ function Profile() {
                     </div>
                     <div className="col-4 p-2">
                       <label>Password</label>
-                      <input key={Date.now()} defaultValue={ProfileData['password']}  ref={(input)=>passwordRef=input} placeholder="User Password" className="form-control animated fadeInUp" type="password"/>
+                      <input key={Date.now()}  ref={(input)=>passwordRef=input} placeholder="User Password" className="form-control animated fadeInUp" type="password"/>
                     </div>
                     <div className="col-4 p-2">
                       <button onClick={updateMyProfile}  className="btn w-100 float-end btn-primary animated fadeInUp">Update</button>

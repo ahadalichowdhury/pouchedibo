@@ -115,22 +115,40 @@ exports.login = async (req, res) => {
 
 //profileUpdate
 
-exports.profileUpdate = (req, res) => {
-  let email = req.headers["email"];
-  let reqBody = req.body;
-  userModel.updateOne({ email: email }, reqBody, (err, data) => {
-    if (err) {
-      res.status(400).json({
-        status: "fails",
-        data: err,
-      });
-    } else {
-      res.status(200).json({
-        status: "success",
-        data: data,
+exports.profileUpdate = async (req, res) => {
+  try {
+    let email = req.headers["email"];
+    let reqBody = req.body;
+
+    // Check if the request body contains a password
+    if (reqBody.password) {
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(reqBody.password, 10);
+      // Replace the plain text password with the hashed password
+      reqBody.password = hashedPassword;
+    }
+
+    // Update the user profile
+    const updatedUser = await userModel.updateOne({ email: email }, reqBody);
+
+    if (updatedUser.nModified === 0) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found or no changes to update",
       });
     }
-  });
+
+    res.status(200).json({
+      status: "success",
+      message: "Profile updated successfully",
+      data: updatedUser,
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: err.message || "Something went wrong",
+    });
+  }
 };
 
 exports.profileDetails = (req, res) => {
@@ -327,26 +345,37 @@ exports.RecoverResetPassword = async (req, res) => {
   let OTPCode = req.body["OTP"];
   let newPassword = req.body["password"];
 
-  //we check our otp is already use or not
-  let status = 1;
-  try {
-    let OTPUsedCount = await OTPModel.aggregate([
-      { $match: { email: email, otp: OTPCode, status: status } },
-      { $count: "total" },
-    ]);
-    if (OTPUsedCount.length > 0) {
-      let passwordUpdate = await userModel.updateOne(
-        { email: email },
-        {
-          password: newPassword,
-        }
-      );
-      res.status(200).json({ status: "success", data: passwordUpdate });
-    } else {
-      res.status(200).json({ status: "fail", data: "OTP Code is not valid" });
+  // Check if the request body contains a new password
+  if (newPassword) {
+    try {
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Check if OTP is valid and not already used
+      let status = 1;
+      let OTPUsedCount = await OTPModel.aggregate([
+        { $match: { email: email, otp: OTPCode, status: status } },
+        { $count: "total" },
+      ]);
+
+      if (OTPUsedCount.length > 0) {
+        // Update the user's password with the hashed new password
+        let passwordUpdate = await userModel.updateOne(
+          { email: email },
+          {
+            password: hashedPassword,
+          }
+        );
+
+        res.status(200).json({ status: "success", data: passwordUpdate });
+      } else {
+        res.status(200).json({ status: "fail", data: "OTP Code is not valid" });
+      }
+    } catch (err) {
+      res.status(200).json({ status: "fail", data: err });
     }
-  } catch (err) {
-    res.status(200).json({ status: "fail", data: err });
+  } else {
+    res.status(200).json({ status: "fail", data: "New password is required" });
   }
 };
 
