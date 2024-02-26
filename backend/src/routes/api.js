@@ -4,7 +4,7 @@ const {
   registration,
   profileUpdate,
   login,
-  profileDetails, RecoverVerifyEmail, recoverOTPVerify, RecoverResetPassword, acceptUser,makeInstructor,sendNotificationForAvailableDriver,findSingleUserFromId,ownProfileDetail,approveRideFromUser, declineRideFromUser
+  profileDetails, RecoverVerifyEmail, recoverOTPVerify, RecoverResetPassword, acceptUser,makeInstructor,sendNotificationForAvailableDriver,findSingleUserFromId,ownProfileDetail,approveRideFromUser, declineRideFromUser,successPage
 } = require("../controllers/userController");
 const historyController = require("../controllers/historyController")
 const driverController = require("../controllers/driverController")
@@ -49,4 +49,5 @@ router.get('/vehicles', vehicleController.getAllVehicles);
 
 router.put('/sendNotification', authMiddleware,sendNotificationForAvailableDriver);
 router.put('/acceptUser/:userId',authMiddleware, acceptUser);
+router.post("/success", successPage)
 module.exports = router;

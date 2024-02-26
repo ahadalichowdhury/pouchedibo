@@ -3,20 +3,28 @@ import "../assets/css/style.css";
 import axios from "axios";
 import { errorToast, successToast } from "../Helper/FormHelper";
 import { Button } from "react-bootstrap";
+import { AddressAutofill } from "@mapbox/search-js-react";
+import MapComponent from "./MapComponent";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
+import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
+import "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
 
 function Home() {
   const [startLocation, setStartLocation] = useState("");
   const [endLocation, setEndLocation] = useState("");
   const fromRef = useRef();
   const toRef = useRef();
-  const dateRef = useRef();
+
   const startTimeRef = useRef();
   const endTimeRef = useRef();
 
   const token = localStorage.getItem("token");
-  const [userData, setUserData]= useState(null)
-  const [accepted, isAccepted]= useState(null)
-  console.log("user data",userData)
+  const [userData, setUserData] = useState(null);
+  const [accepted, isAccepted] = useState(null);
+  const [startPoint, setStartPoint] = useState(null);
+  const [endPoint, setEndPoint] = useState(null);
+  console.log("user data", userData);
   // console.log("accepted ",accepted)
   useEffect(() => {
     const fetchData = async () => {
@@ -31,7 +39,6 @@ function Home() {
           .then((res) => {
             isAccepted(res.data.data?.request?.isAccepted);
             setUserData(res.data.data);
-
           });
       } catch (error) {
         errorToast(error.message);
@@ -42,11 +49,8 @@ function Home() {
   }, []);
 
   const handleSubmit = () => {
-    const from = fromRef.current.value;
-    const to = toRef.current.value;
-    const date = dateRef.current.value;
-
-    // console.log(from, to, date, startTime, endTime);
+    const from = startPoint;
+    const to = endPoint;
 
     const token = localStorage.getItem("token");
 
@@ -56,7 +60,6 @@ function Home() {
         {
           from,
           to,
-          date,
         },
         {
           headers: {
@@ -67,48 +70,136 @@ function Home() {
       .then((res) => {
         console.log(res);
         console.log(res.data);
-        localStorage.setItem("startLocation", from);
-        localStorage.setItem("endLocation", to);
+        localStorage.setItem("startLocation", startPoint);
+        localStorage.setItem("endLocation", endPoint);
         window.location.href = "/carList";
       })
       .catch((err) => {
         console.log(err.message);
       });
   };
+
+  const price = localStorage.getItem("price");
   const handleApprove = async (userId, driverId) => {
     try {
-      const response = await axios.put(`http://localhost:8000/api/v1/approve-ride/${userId}`, { driverId });
-      if (response.data.status === 'success') {
-        successToast('Ride request approved successfully');
-        setTimeout(() => {
-          window.location.href = "/"
-        }, 2000);
-      } else {
-        console.error('Failed to approve ride request:', response.data.message);
-      }
+      await axios
+        .put(`http://localhost:8000/api/v1/approve-ride/${userId}`, {
+          driverId,
+          price,
+        })
+        .then((result) => {
+          console.log(result);
+          successToast("Ride request approved successfully");
+          setTimeout(() => {
+            window.location.replace(result.data.url);
+          }, 2000);
+        });
     } catch (error) {
-      console.error('Error approving ride request:', error.message);
+      console.error("Error approving ride request:", error.message);
     }
   };
   const handleDecline = async (userId, driverId) => {
     try {
-      const response = await axios.put(`http://localhost:8000/api/v1/decline-ride/${userId}`, { driverId });
-      if (response.data.status === 'success') {
-        console.log('Ride request declined');
+      const response = await axios.put(
+        `http://localhost:8000/api/v1/decline-ride/${userId}`,
+        { driverId }
+      );
+      if (response.data.status === "success") {
+        console.log("Ride request declined");
         setTimeout(() => {
-          window.location.href = "/"
+          window.location.href = "/";
         }, 2000);
       } else {
-        console.error('Failed to approve ride request:', response.data.message);
+        console.error("Failed to approve ride request:", response.data.message);
       }
     } catch (error) {
-      console.error('Error approving ride request:', error.message);
+      console.error("Error approving ride request:", error.message);
     }
   };
-  return (
-    accepted ? (
-      <>
-        <div style={{ height: "100vh" }}>
+
+  //for map
+  const mapContainer = useRef(null);
+  const [map, setMap] = useState(null);
+  const [startingPoint, setStartingPoint] = useState(null);
+  const [endingPoint, setEndingPoint] = useState(null);
+
+  useEffect(() => {
+    const loadMap = async () => {
+      mapboxgl.accessToken =
+        "pk.eyJ1IjoiYWhhZGFsaWNob3dkaHVyeSIsImEiOiJjbHNkOW4wZ3owb2huMmlwYzlrMjhtN3JsIn0.osikVK11OS5BL6rK8ZKhYg";
+
+      const newMap = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/streets-v11",
+        center: [90.4113, 23.8103], // Default center
+        zoom: 7,
+      });
+
+      setMap(newMap);
+
+      const directions = new MapboxDirections({
+        accessToken: mapboxgl.accessToken,
+        unit: "metric",
+        profile: "mapbox/driving",
+        controls: {
+          // inputs: false,
+          // steps: false,
+          instructions: false,
+          profileSwitcher: false,
+        },
+      });
+
+      directions.on("route", (event) => {
+        if (event.route && event.route[0] && event.route[0].legs) {
+          const leg = event.route[0].legs[0];
+          setStartingPoint(leg.steps[0].maneuver.location);
+          setEndingPoint(leg.steps[leg.steps.length - 1].maneuver.location);
+        }
+      });
+
+      newMap.addControl(directions, "top-left");
+    };
+
+    loadMap();
+
+    return () => {
+      if (map) {
+        map.remove();
+      }
+    };
+  }, []);
+
+  // Function to get address from coordinates
+  const getAddressFromCoordinates = async (coordinates) => {
+    const response = await fetch(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${coordinates[0]},${coordinates[1]}.json?access_token=${mapboxgl.accessToken}`
+    );
+    const data = await response.json();
+    if (data.features && data.features.length > 0) {
+      return data.features[0].place_name;
+    }
+    return "Unknown";
+  };
+
+  console.log(startPoint);
+  console.log(endPoint);
+
+  useEffect(() => {
+    if (startingPoint) {
+      getAddressFromCoordinates(startingPoint).then((address) => {
+        setStartPoint(address);
+      });
+    }
+    if (endingPoint) {
+      getAddressFromCoordinates(endingPoint).then((address) => {
+        setEndPoint(address);
+      });
+    }
+  }, [startingPoint, endingPoint]);
+
+  return accepted ? (
+    <>
+      <div style={{ height: "100vh" }}>
         <div
           style={{
             display: "flex",
@@ -122,78 +213,74 @@ function Home() {
             className="box-shadow shadow-lg p-3 mb-5 bg-light"
           >
             <div>
-              <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
-                <img style={{borderRadius: "50%", width: "70px", height: "70px"}} src={userData?.request?.user?.photo} alt=""/>
-                <p className="text-dark">Driver Name: {userData?.request?.user?.firstName +" " + userData?.request?.user?.lastName }</p>
-                <p>Driver Phone No: {userData?.request?.user?.mobile }</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <img
+                  style={{ borderRadius: "50%", width: "70px", height: "70px" }}
+                  src={userData?.request?.user?.photo}
+                  alt=""
+                />
+                <p className="text-dark">
+                  Driver Name:{" "}
+                  {userData?.request?.user?.firstName +
+                    " " +
+                    userData?.request?.user?.lastName}
+                </p>
+                <p>Driver Phone No: {userData?.request?.user?.mobile}</p>
               </div>
               <div className="d-flex  flex-row mt-4 ms-3 pb-3">
                 <Button
                   variant="primary"
                   className="mx-auto"
-                  onClick={()=>handleApprove(userData?._id, userData?.request?.user?._id)}
+                  onClick={() =>
+                    handleApprove(userData?._id, userData?.request?.user?._id)
+                  }
                 >
                   Approve
                 </Button>
                 <Button
                   variant="primary"
                   className="mx-auto"
-                  onClick={()=>handleDecline(userData?._id, userData?.request?.user?._id)}
+                  onClick={() =>
+                    handleDecline(userData?._id, userData?.request?.user?._id)
+                  }
                 >
                   Cancel
                 </Button>
-                
               </div>
             </div>
           </div>
         </div>
       </div>
-      </>
-    ) : (
-      <div className="home-container">
-        <div className="input-form">
-          <h2>Search location</h2>
-          <input
-            type="text"
-            className="homeinput"
-            placeholder="From"
-            ref={fromRef}
-            value={startLocation}
-            onChange={(e) => setStartLocation(e.target.value)}
-          />
-          <input
-            type="text"
-            className="homeinput"
-            placeholder="To"
-            ref={toRef}
-            value={endLocation}
-            onChange={(e) => setEndLocation(e.target.value)}
-          />
-          <input
-            type="date"
-            className="homeinput"
-            placeholder="estimated date"
-            ref={dateRef}
-          />
-          <button
-            className="btn w-100 animated fadeInUp float-end btn-primary"
-            onClick={handleSubmit}
-          >
-            Search
-          </button>
-        </div>
-        <div className="google-map">
-          <iframe
-            title="Google Map"
-            src="https://www.google.com/maps/d/embed?mid=12Gwhw81QpfUErMIYE8fl5tQNqZs&hl=en&ehbc=2E312F"
-            width="400"
-            height="300"
-          ></iframe>
+    </>
+  ) : (
+    <div
+      className="home-container"
+      style={{ flexDirection: "column", marginTop: "100px" }}
+    >
+      <h2>Find Your Travel Route</h2>
+      <p>You can input your location or choose from the map</p>
+      <div style={{ display: "flex" }}>
+        <div style={{ width: "140%", height: "600px" }} ref={mapContainer}>
+          When you think of maps, you likely don’t think much about text. In
+          Lesson One, we defined graphicacy—the skill needed to interpret that
+          which cannot be communicated by text or numbers alone—as
         </div>
       </div>
-    )
+      <button
+        className="btn w-40 animated fadeInUp float-end btn-primary mt-5"
+        onClick={handleSubmit}
+      >
+        Next
+      </button>
+    </div>
   );
-  
 }
 
 export default Home;

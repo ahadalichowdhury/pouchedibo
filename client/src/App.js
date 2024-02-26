@@ -18,6 +18,7 @@ import CarListPage from './pages/carListPage';
 import Testing from './pages/Testing';
 import AcceptInvitationPage from './pages/AcceptInvitationPage';
 import SenderWaitingPage from './pages/SenderWaitingPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
 function App() {
   
  if(getToken()){
@@ -34,6 +35,7 @@ function App() {
         <Route exact path="/settings/driver" element={<DriverProfilePage />} />
         <Route exact path="/accept-invitation/:userId" element={<AcceptInvitationPage />} />
         <Route exact path="/senderWaiting" element={<SenderWaitingPage />} />
+        <Route exact path="/success" element={<PaymentSuccessPage />} />
       </Routes>
     </BrowserRouter>
   )
@@ -42,7 +44,7 @@ function App() {
     <BrowserRouter>
        <Routes>
        <Route exact path="/" element={<Navigate to="/login" replace />} />
-       <Route exact path="/Login" element={<LoginPage />} />
+       <Route exact path="/login" element={<LoginPage />} />
              <Route exact path="/Registration" element={<RegistrationPage />} />
             <Route exact path="/SendOTP" element={<SendOTP />} />
             <Route exact path="/VerifyOTP" element={<VerifyOTP />} />

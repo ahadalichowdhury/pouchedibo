@@ -4,12 +4,20 @@ const OTPModel = require("../model/OTPModel");
 const SendEmailUtils = require("../utilis/SendEmailUtils");
 const queryString = require("queryString");
 const notificationModel = require("../model/notificationModel");
-const { sendMultiplePushNotification, sendMultipleForApproveAndCancelPushNotification } = require("../utils/notificationUtils");
+const {
+  sendMultiplePushNotification,
+  sendMultipleForApproveAndCancelPushNotification,
+} = require("../utils/notificationUtils");
 const driverModel = require("../model/driverModel");
 const stripe = require("stripe")(
   "sk_test_51OEnDEE7CJNVLFNHoP5cSxNylu7FnRkAKN1pXTip35CrjKIBmc2CQQz8abdv57gtfRQmNZJlaH5z0KQwg5lQ7nwV006n7WEbsr"
 );
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
+const SSLCommerzPayment = require("sslcommerz-lts");
+const { ObjectId } = require('mongodb');
+const store_id = process.env.STORE_ID;
+const store_passwd = process.env.STORE_PASSWORD;
+const is_live = false; //true for live, false foe sandbox
 
 //registration
 exports.registration = async (req, res) => {
@@ -96,7 +104,7 @@ exports.login = async (req, res) => {
         data: data[0]["email"],
       };
       let token = jwt.sign(Payload, "ahadalichowdhury");
-      
+
       // Save notification token
       await notificationModel.create({
         user_id: data[0]._id,
@@ -111,7 +119,6 @@ exports.login = async (req, res) => {
     res.status(400).json({ status: "fail", data: error.message });
   }
 };
-
 
 //profileUpdate
 
@@ -190,9 +197,11 @@ exports.ownProfileDetail = async (req, res) => {
     return res.status(200).json({ data: user });
   } catch (error) {}
 };
+
+const trans_id = new ObjectId().toString();
 exports.approveRideFromUser = async (req, res) => {
   const userId = req.params.userId;
-  const {driverId} = req.body;
+  const { driverId, price } = req.body;
   try {
     const user = await userModel.findByIdAndUpdate(
       userId,
@@ -210,14 +219,54 @@ exports.approveRideFromUser = async (req, res) => {
         .status(404)
         .json({ status: "fail", message: "User not found" });
     }
+    
+    const driverProfile = await userModel.findById(driverId);
+    console.log(driverProfile)
+   
 
-    await sendMultipleForApproveAndCancelPushNotification(driverId, "Your ride request has been approved")
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Ride request updated successfully",
-      });
+    const data = {
+      total_amount: price,
+      currency: "BDT",
+      tran_id: trans_id, // use unique tran_id for each api call
+      success_url: `http://localhost:8000/api/v1/success`,
+      fail_url: "http://localhost:3000/fail",
+      cancel_url: "http://localhost:3030/cancel",
+      ipn_url: "http://localhost:3030/ipn",
+      shipping_method: "Courier",
+      product_name: "Computer.",
+      product_category: "Electronic",
+      product_profile: "general",
+      cus_name: driverProfile?.firstName + driverProfile?.lastName,
+      cus_email: driverProfile.email,
+      cus_add1: "Dhaka",
+      cus_add2: "Dhaka",
+      cus_city: "Dhaka",
+      cus_state: "Dhaka",
+      cus_postcode: "1000",
+      cus_country: "Bangladesh",
+      cus_phone: driverProfile.mobile,
+      cus_fax: "01711111111",
+      ship_name: "Customer Name",
+      ship_add1: "Dhaka",
+      ship_add2: "Dhaka",
+      ship_city: "Dhaka",
+      ship_state: "Dhaka",
+      ship_postcode: 1000,
+      ship_country: "Bangladesh",
+    };
+    const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
+    sslcz.init(data).then((apiResponse) => {
+      // Redirect the user to payment gateway
+      let GatewayPageURL = apiResponse.GatewayPageURL;
+      res.send({url: GatewayPageURL});
+      console.log("Redirecting to: ", GatewayPageURL);
+    });
+
+    await sendMultipleForApproveAndCancelPushNotification(
+      driverId,
+      "Your ride request has been approved"
+    );
+    
   } catch (error) {
     console.error("Error approving ride from user:", error);
     res.status(500).json({ status: "error", message: "Internal server error" });
@@ -225,7 +274,7 @@ exports.approveRideFromUser = async (req, res) => {
 };
 exports.declineRideFromUser = async (req, res) => {
   const userId = req.params.userId;
-  const {driverId} = req.body;
+  const { driverId } = req.body;
   try {
     const user = await userModel.findByIdAndUpdate(
       userId,
@@ -244,13 +293,14 @@ exports.declineRideFromUser = async (req, res) => {
         .json({ status: "fail", message: "User not found" });
     }
 
-    await sendMultipleForApproveAndCancelPushNotification(driverId, "Your ride request has been decline")
-    res
-      .status(200)
-      .json({
-        status: "success",
-        message: "Ride request updated successfully",
-      });
+    await sendMultipleForApproveAndCancelPushNotification(
+      driverId,
+      "Your ride request has been decline"
+    );
+    res.status(200).json({
+      status: "success",
+      message: "Ride request updated successfully",
+    });
   } catch (error) {
     console.error("Error approving ride from user:", error);
     res.status(500).json({ status: "error", message: "Internal server error" });
@@ -438,7 +488,7 @@ exports.sendNotificationForAvailableDriver = async (req, res) => {
       vehicleType: vehicleId,
       driver_mode: true,
     });
-    // console.log(drivers)
+    console.log("drivers",drivers)
     // return;
 
     if (!drivers || drivers.length === 0) {
@@ -449,6 +499,7 @@ exports.sendNotificationForAvailableDriver = async (req, res) => {
 
     // Extract the user IDs from the drivers
     const userIds = drivers.map((driver) => driver.user);
+    console.log("user Ids",userIds)
 
     // Send notifications to users with the retrieved user IDs
     for (const userId of userIds) {
@@ -478,7 +529,7 @@ exports.acceptUser = async (req, res) => {
     }
     const user = await userModel.findByIdAndUpdate(
       userId,
-      { "request.isAccepted": isAccepted, "request.user": driverUser._id },
+      { "request.isAccepted": true, "request.user": driverUser._id },
       { new: true }
     );
     res
@@ -489,3 +540,8 @@ exports.acceptUser = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+
+exports.successPage = async (req, res)=>{
+  res.redirect("http://localhost:3000/success");
+}

@@ -10,8 +10,8 @@ function AcceptInvitationPage() {
   console.log("is accepted", isAccepted);
   useEffect(() => {
     axios.get(`http://localhost:8000/api/v1/userInfo/${userId}`).then((res) => {
-      setIsAccepted(res.data.data.isAccepted);
-      console.log(res.data.data);
+      setIsAccepted(res?.data?.data?.request?.isAccepted);
+      console.log(res?.data?.data);
     });
   }, []);
   const token = localStorage.getItem('token');

@@ -8,11 +8,11 @@ initializeApp({
   projectId: "testing-realtime-commenting",
 });
 
-const sendMultiplePushNotification = async (user_id, message, userId) => {
+const sendMultiplePushNotification = async (user_id, message, senderUserId) => {
   try {
-    console.log(`http://localhost:3000/accept-invitation/${user_id}`)
+    console.log(`http://localhost:3000/accept-invitation/${senderUserId}`)
     console.log(`receiver User id: ${user_id}`);
-    console.log(`sender User id: ${userId}`);
+    console.log(`sender User id: ${senderUserId}`);
     console.log(`Message: ${message}`);
     const tokenCollections = await Notification.find({ user_id });
     if (tokenCollections) {
@@ -21,17 +21,17 @@ const sendMultiplePushNotification = async (user_id, message, userId) => {
       });
       const pushMessage = {
         notification: {
-          body: message + `#http://localhost:3000/accept-invitation/${userId}`,
+          body: message + `#http://localhost:3000/accept-invitation/${senderUserId}`,
           title: "Book Now?",
          
         },
         tokens,
         webpush: {
           notification: {
-            click_action: `http://localhost:3000/accept-invitation/${userId}` 
+            click_action: `http://localhost:3000/accept-invitation/${senderUserId}` 
           },
           fcmOptions: {
-            link:  `/accept-invitation/${userId}`
+            link:  `/accept-invitation/${senderUserId}`
           }
         },
       

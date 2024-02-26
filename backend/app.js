@@ -7,6 +7,7 @@ const helmet = require("helmet");
 const { connectToDB } = require("./src/utils/db");
 const router = require("./src/routes/api");
 
+
 require("dotenv").config();
 
 app.use(cors());
@@ -29,6 +30,10 @@ app.use(
 );
 //connect database
 connectToDB();
+
+//ssl commerz implement 
+
+
 
 app.use("/api/v1", router);
 

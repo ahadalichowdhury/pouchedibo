@@ -213,6 +213,7 @@ const CarList = () => {
           successToast(
             `Successfully sent the notification  ${carName} for availabe driver`
           );
+          localStorage.setItem("price", price);
           setTimeout(() => {
             window.location.href = "/senderWaiting";
           }, 2000);
@@ -222,7 +223,7 @@ const CarList = () => {
     }
   };
   return (
-    <div className="carListCard">
+    <div className="carListCard" style={{display: "flex", flexDirection: "column",  justifyContent: "center", }}>
       <div className="carList-upper-part">
         <div>
           <div
@@ -232,12 +233,20 @@ const CarList = () => {
           />
         </div>
       </div>
-      <div>
+      <div
+        style={{
+          width: "50%",
+          border: "0.2px solid gray",
+          textAlign: "center",
+          boxShadow: "5px 5px 10px rgba(0, 0, 0, 0.5)",
+          margin: "20px auto",
+        }}
+      >
         <p style={{ color: "red", fontSize: "20px" }}>
           total Distance: {distance} km
         </p>
         <p style={{ color: "red", fontSize: "20px" }}>
-          total Ammount: {price} BDT
+          total Cost: {price} BDT
         </p>
       </div>
       <div className="carList-lower-part mt-5">
@@ -262,15 +271,6 @@ const CarList = () => {
               </div>
             </div>
           ))}
-          {/* <div className="car-item">
-            <div>
-              <img src={Car_image1} alt="Car 1" className="car-image"/>
-              <span>ED STREET TEXI</span>
-            </div>
-            <div>
-              <button className="BookNowbutton">Book Now</button>
-            </div>
-          </div> */}
         </ul>
       </div>
     </div>

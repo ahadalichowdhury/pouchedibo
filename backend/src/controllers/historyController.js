@@ -5,7 +5,7 @@ const userModel = require('../model/userModel');
 exports.createHistory = async (req, res) => {
     const email = req.headers.email;
     console.log("User email from middleware:", email);
-    const {from, to, date} = req.body;
+    const {from, to} = req.body;
     try {
         const user = await userModel.findOne({ email: email });
         console.log("Found user:", user);
@@ -14,7 +14,7 @@ exports.createHistory = async (req, res) => {
             return res.status(400).json({ message: 'User not found.' });
         }
     // Validate required fields
-    if (!from || !to || !date ) {
+    if (!from || !to  ) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
 
@@ -22,7 +22,7 @@ exports.createHistory = async (req, res) => {
     const newHistory = new History({
       from,
       to,
-      date,
+      
     });
 
     // Save the history entry to the database
