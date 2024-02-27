@@ -4,7 +4,7 @@ const {
   registration,
   profileUpdate,
   login,
-  profileDetails, RecoverVerifyEmail, recoverOTPVerify, RecoverResetPassword, acceptUser,makeInstructor,sendNotificationForAvailableDriver,findSingleUserFromId,ownProfileDetail,approveRideFromUser, declineRideFromUser,successPage
+  profileDetails, RecoverVerifyEmail, recoverOTPVerify, RecoverResetPassword, acceptUser,makeInstructor,sendNotificationForAvailableDriver,findSingleUserFromId,ownProfileDetail,approveRideFromUser, declineRideFromUser,successPage,confirmRegistration
 } = require("../controllers/userController");
 const historyController = require("../controllers/historyController")
 const driverController = require("../controllers/driverController")
@@ -20,6 +20,7 @@ router.post('/upload', upload.single("file"), uploadImage);
 
 
 router.post("/registration", registration);
+router.get("/confirm/:userId", confirmRegistration);
 router.post("/login", login);
 router.post("/profileUpdate", authMiddleware, profileUpdate);
 router.get("/userInfo/:userId", findSingleUserFromId)

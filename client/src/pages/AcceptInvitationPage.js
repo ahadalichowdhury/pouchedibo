@@ -1,10 +1,11 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
 import { successToast } from "../Helper/FormHelper";
 
 function AcceptInvitationPage() {
+  const navigate = useNavigate();
   const { userId } = useParams();
   const [isAccepted, setIsAccepted] = useState(null);
   console.log("is accepted", isAccepted);
@@ -26,7 +27,7 @@ function AcceptInvitationPage() {
       }).then((res)=>{
         successToast("You are accepted this ride")
         setTimeout(() => {
-          window.location.href = "/";
+          navigate("/");
       }, 2000);
       })
     } catch (error) {
@@ -57,7 +58,7 @@ function AcceptInvitationPage() {
                 <Button
                   variant="primary"
                   className="mx-auto"
-                  onClick={()=> window.location.href="/"}
+                  onClick={()=> navigate("/")}
                 >
                   Go back HomePage
                 </Button>
@@ -83,7 +84,7 @@ function AcceptInvitationPage() {
             >
               <div>
                 <div>
-                  <h4 className="text-dark text-center h-3">Are You Sure</h4>
+                  <h4 className="text-dark text-center h-3">Are you sure to confirm this ride?</h4>
                 </div>
                 <div className="d-flex  flex-row mt-4 ms-3 pb-3">
                   <Button
@@ -95,7 +96,7 @@ function AcceptInvitationPage() {
                   </Button>
                   <Button
                     variant="danger"
-                    onClick={() => (window.location.href = "/")}
+                    onClick={() => (navigate("/"))}
                     className="me-3"
                   >
                     No

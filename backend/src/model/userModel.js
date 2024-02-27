@@ -22,8 +22,8 @@ const userData = mongoose.Schema(
     photo: {
       type: String,
     },
-     //this is for payment method stripe
-     stripeCustomerId: {
+    //this is for payment method stripe
+    stripeCustomerId: {
       type: String, // Store the Stripe Customer ID associated with the user
     },
     stripeAccountId: {
@@ -31,30 +31,34 @@ const userData = mongoose.Schema(
     },
     Driver: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Driver',
+      ref: "Driver",
     },
-    history: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'History',
-    }],
+    history: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "History",
+      },
+    ],
     request: {
       isAccepted: {
         type: Boolean,
-        default: false
+        default: false,
       },
       user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "user"
-      }
+        ref: "user",
+      },
     },
-    
+    is_registered: {
+      type: Boolean,
+      default: false,
+    },
+
     createdDate: { type: Date, default: Date.now() },
   },
   {
     versionKey: false,
-  },
- 
-  
+  }
 );
 
 const userModel = mongoose.model("user", userData);

@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { isEmpty, isEmailValid, errorToast } from "../Helper/FormHelper";
+import { Link, useNavigate } from "react-router-dom";
+import { isEmpty, isEmailValid, errorToast, successToast } from "../Helper/FormHelper";
 import { loginRequest } from "../ApiRequest/APIReguest";
 import firebase from "firebase/compat/app";
 import { getMessaging, getToken } from "firebase/messaging";
@@ -13,7 +13,7 @@ const firebaseConfig = {
   storageBucket: "testing-realtime-commenting.appspot.com",
   messagingSenderId: "918005772150",
   appId: "1:918005772150:web:c3b4b7f8302e0f21c51457",
-  measurementId: "G-3V5JJ7NCBZ"  
+  measurementId: "G-3V5JJ7NCBZ"
 };
 
 
@@ -22,14 +22,15 @@ const messaging = getMessaging(app);
 
 function Login() {
   const [token, setToken] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Request permission for notifications when component mounts
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
-        console.log("Notification permission granted.");
+        successToast("Notification permission granted.");
       } else {
-        console.log("Notification permission denied.");
+        errorToast("Notification permission denied.");
       }
     });
   }, []);
@@ -43,7 +44,7 @@ function Login() {
         vapidKey: "BO0XkDAL45w0rHe7-fYMIQ4XIhHC_iQiF4w1LZC7DnJPSYOgfG2nyCoiQWrVLjcVtDbRB_SsjbOD9_lS0w34yFM",
       });
       setToken(currentToken);
-      console.log(currentToken);
+      // console.log(currentToken);
 
       const email = emailRef.value;
       const password = passwordRef.value;
@@ -55,7 +56,7 @@ function Login() {
       } else {
         try {
           const result = await loginRequest(email, password, currentToken);
-          if (result === true) {
+          if (result) {
             window.location.href = "/";
           }else {
             errorToast("Please enter valid email address and password")

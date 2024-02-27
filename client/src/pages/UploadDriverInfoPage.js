@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./UploadDriverInfoPage.css";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { successToast } from "../Helper/FormHelper";
 import axios from "axios";
 import { getUserDetails, removeSessions } from "../Helper/sessionHelper";
 
 function UploadDriverInfoPage() {
   const [vehicles, setVehicles] = useState([]);
-
-  
+  const navigate = useNavigate();
   useEffect(() => {
     // Fetch vehicles from the backend when the component mounts
     async function fetchVehicles() {
@@ -102,7 +101,7 @@ const token = localStorage.getItem("token");
 
     console.log('Response:', response.data);
     removeSessions()
-    window.location.href="/";
+    navigate("/");
   } catch (error) {
     console.error('Error creating driver profile:', error);
   }

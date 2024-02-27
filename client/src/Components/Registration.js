@@ -49,8 +49,7 @@ function Registration() {
           photo
         });
         if (response.data.status === "success") {
-          successToast("Registration successful");
-          window.location.href = "/login"
+          successToast("Registration successful, Check Your Email for confirm your account");
           
         } if (response.data.status === "fail"){
           if (response.data.data === "User already exists") {
@@ -70,7 +69,7 @@ function Registration() {
 
   return (
     <div className="container">
-      <div className="row  justify-content-center">
+      <div className="row justify-content-center">
         <div className="col-md-10 col-lg-8 center-screen">
           <div className="card animated fadeIn w-100 p-3">
             <div className="card-body">

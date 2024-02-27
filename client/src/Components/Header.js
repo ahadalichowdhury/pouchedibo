@@ -94,7 +94,7 @@ const Header = (props) => {
           </div>
         </Container>
       </Navbar>
-      {console.log(window.location.href)}
+      {/* {console.log(window.location.href)} */}
       {window.location.href.includes("http://localhost:3000/settings") ? (
         <>
           <div

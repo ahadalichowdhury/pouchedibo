@@ -4,9 +4,11 @@ import mapboxgl from "mapbox-gl";
 import polyline from "@mapbox/polyline";
 import { getProfileRequest } from "../ApiRequest/APIReguest";
 import { errorToast, successToast } from "../Helper/FormHelper";
+import { useNavigate } from "react-router-dom";
 
 const CarList = () => {
   const [map, setMap] = useState(null);
+  const navigate = useNavigate();
   const mapContainer = useRef(null);
   const [startLocation, setStartLocation] = useState("");
   const [endLocation, setEndLocation] = useState("");
@@ -215,7 +217,7 @@ const CarList = () => {
           );
           localStorage.setItem("price", price);
           setTimeout(() => {
-            window.location.href = "/senderWaiting";
+            navigate("/senderWaiting");
           }, 2000);
         });
     } catch (error) {

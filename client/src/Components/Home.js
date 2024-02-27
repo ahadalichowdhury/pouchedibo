@@ -9,21 +9,16 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxDirections from "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions";
 import "@mapbox/mapbox-gl-directions/dist/mapbox-gl-directions.css";
+import { useNavigate } from "react-router-dom";
 
 function Home() {
-  const [startLocation, setStartLocation] = useState("");
-  const [endLocation, setEndLocation] = useState("");
-  const fromRef = useRef();
-  const toRef = useRef();
-
-  const startTimeRef = useRef();
-  const endTimeRef = useRef();
-
   const token = localStorage.getItem("token");
+  const navigate = useNavigate();
   const [userData, setUserData] = useState(null);
   const [accepted, isAccepted] = useState(null);
   const [startPoint, setStartPoint] = useState(null);
   const [endPoint, setEndPoint] = useState(null);
+  const [isVarified, setIsVarified] = useState(null);
   console.log("user data", userData);
   // console.log("accepted ",accepted)
   useEffect(() => {
@@ -39,6 +34,7 @@ function Home() {
           .then((res) => {
             isAccepted(res.data.data?.request?.isAccepted);
             setUserData(res.data.data);
+            setIsVarified(res?.data?.data?.is_registered);
           });
       } catch (error) {
         errorToast(error.message);
@@ -72,7 +68,7 @@ function Home() {
         console.log(res.data);
         localStorage.setItem("startLocation", startPoint);
         localStorage.setItem("endLocation", endPoint);
-        window.location.href = "/carList";
+        navigate("/carList");
       })
       .catch((err) => {
         console.log(err.message);
@@ -107,7 +103,7 @@ function Home() {
       if (response.data.status === "success") {
         console.log("Ride request declined");
         setTimeout(() => {
-          window.location.href = "/";
+          navigate("/");
         }, 2000);
       } else {
         console.error("Failed to approve ride request:", response.data.message);
@@ -197,90 +193,138 @@ function Home() {
     }
   }, [startingPoint, endingPoint]);
 
-  return accepted ? (
-    <>
-      <div style={{ height: "100vh" }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          className="modal "
-        >
-          <div
-            style={{ width: "500px", borderRadius: "20px", height: "300px" }}
-            className="box-shadow shadow-lg p-3 mb-5 bg-light"
-          >
-            <div>
+  if (isVarified) {
+    if (accepted) {
+      return (
+        <>
+          <div style={{ height: "100vh" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              className="modal "
+            >
               <div
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
+                  width: "500px",
+                  borderRadius: "20px",
+                  height: "300px",
                 }}
+                className="box-shadow shadow-lg p-3 mb-5 bg-light"
               >
-                <img
-                  style={{ borderRadius: "50%", width: "70px", height: "70px" }}
-                  src={userData?.request?.user?.photo}
-                  alt=""
-                />
-                <p className="text-dark">
-                  Driver Name:{" "}
-                  {userData?.request?.user?.firstName +
-                    " " +
-                    userData?.request?.user?.lastName}
-                </p>
-                <p>Driver Phone No: {userData?.request?.user?.mobile}</p>
-              </div>
-              <div className="d-flex  flex-row mt-4 ms-3 pb-3">
-                <Button
-                  variant="primary"
-                  className="mx-auto"
-                  onClick={() =>
-                    handleApprove(userData?._id, userData?.request?.user?._id)
-                  }
-                >
-                  Approve
-                </Button>
-                <Button
-                  variant="primary"
-                  className="mx-auto"
-                  onClick={() =>
-                    handleDecline(userData?._id, userData?.request?.user?._id)
-                  }
-                >
-                  Cancel
-                </Button>
+                <div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <img
+                      style={{
+                        borderRadius: "50%",
+                        width: "70px",
+                        height: "70px",
+                      }}
+                      src={userData?.request?.user?.photo}
+                      alt=""
+                    />
+                    <p className="text-dark">
+                      Driver Name:{" "}
+                      {userData?.request?.user?.firstName +
+                        " " +
+                        userData?.request?.user?.lastName}
+                    </p>
+                    <p>Driver Phone No: {userData?.request?.user?.mobile}</p>
+                  </div>
+                  <div className="d-flex  flex-row mt-4 ms-3 pb-3">
+                    <Button
+                      variant="primary"
+                      className="mx-auto"
+                      onClick={() =>
+                        handleApprove(
+                          userData?._id,
+                          userData?.request?.user?._id
+                        )
+                      }
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant="primary"
+                      className="mx-auto"
+                      onClick={() =>
+                        handleDecline(
+                          userData?._id,
+                          userData?.request?.user?._id
+                        )
+                      }
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+        </>
+      );
+    } else {
+      return (
+
+        <>
+        .
+          <div
+            className="home-container"
+            style={{ flexDirection: "column", marginTop: "100px" }}
+          >
+            <h2>Find Your Travel Route</h2>
+            <p>You can input your location or choose from the map</p>
+            <div style={{ display: "flex" }}>
+              <div
+                style={{ width: "140%", height: "600px" }}
+                ref={mapContainer}
+              >
+                When you think of maps, you likely don’t think much about text.
+                In Lesson One, we defined graphicacy—the skill needed to
+                interpret that which cannot be communicated by text or numbers
+                alone—as
+              </div>
+            </div>
+            <button
+              className="btn w-40 animated fadeInUp float-end btn-primary mt-5"
+              onClick={handleSubmit}
+            >
+              Next
+            </button>
+          </div>
+        </>
+      );
+    }
+  } else {
+    return (
+      <>
+       <p style={{width: "100%",textAlign: "center", fontSize: "28px", fontWeight: "600", backgroundColor: "#FF5C5C"}}>&#9888; You are Not verifed. Please Varify first</p>
+        <div
+          className="home-container"
+          style={{ flexDirection: "column", marginTop: "100px" }}
+        >
+          <h2>Find Your Travel Route</h2>
+          <p>You can input your location or choose from the map</p>
+          <div style={{ display: "flex" }}>
+            <div style={{ width: "100%", height: "400px" }} ref={mapContainer}>
+              When you think of maps, you likely don’t think much about text. In
+              Lesson One, we defined graphicacy—the skill needed to interpret
+              that which cannot be communicated by text or numbers alone—as
+            </div>
+          </div>
         </div>
-      </div>
-    </>
-  ) : (
-    <div
-      className="home-container"
-      style={{ flexDirection: "column", marginTop: "100px" }}
-    >
-      <h2>Find Your Travel Route</h2>
-      <p>You can input your location or choose from the map</p>
-      <div style={{ display: "flex" }}>
-        <div style={{ width: "140%", height: "600px" }} ref={mapContainer}>
-          When you think of maps, you likely don’t think much about text. In
-          Lesson One, we defined graphicacy—the skill needed to interpret that
-          which cannot be communicated by text or numbers alone—as
-        </div>
-      </div>
-      <button
-        className="btn w-40 animated fadeInUp float-end btn-primary mt-5"
-        onClick={handleSubmit}
-      >
-        Next
-      </button>
-    </div>
-  );
+      </>
+    );
+  }
 }
 
 export default Home;

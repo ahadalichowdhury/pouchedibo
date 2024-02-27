@@ -4,10 +4,12 @@ import { getBase64 } from "../Helper/sessionHelper";
 
 import "../assets/css/style.css";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function DriverProfile() {
   const [driverData, setDriverData] = useState(null);
   console.log("driver profile loaded", driverData?.driver_mode)
+  const navigate = useNavigate();
 
   // console.log("user data", userData);
 
@@ -74,7 +76,7 @@ function DriverProfile() {
           },
         }
       ).then(res=>{
-        window.location.href = "/settings/driver"
+        window.location.href="/settings/driver";
       })
 
       console.log("Toggle update response:", response.data);

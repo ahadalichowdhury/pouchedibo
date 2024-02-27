@@ -1,7 +1,6 @@
-
 self.addEventListener("push", (event) => {
   try {
-    console.log(event)
+    console.log(event);
     const data = event.data.json();
 
     // Extract title and body from the notification object in your payload
@@ -11,7 +10,7 @@ self.addEventListener("push", (event) => {
     const options = {
       body: body,
     };
-    console.log(options)
+    console.log(options);
 
     event.waitUntil(self.registration.showNotification(title, options));
   } catch (error) {
@@ -22,16 +21,13 @@ self.addEventListener("push", (event) => {
 self.addEventListener("notificationclick", function (event) {
   console.log(event);
   event.notification.close();
-  
+
   const [message, urlToOpen] = event.notification?.body.split("#");
-  console.log(message)
-  console.log(urlToOpen
-    
-    )
+  console.log(message);
+  console.log(urlToOpen);
   if (urlToOpen) {
     event.waitUntil(clients.openWindow(urlToOpen));
   } else {
     console.error("No click action URL found in the notification.");
   }
 });
-

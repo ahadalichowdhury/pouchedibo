@@ -9,12 +9,15 @@ const {
   sendMultipleForApproveAndCancelPushNotification,
 } = require("../utils/notificationUtils");
 const driverModel = require("../model/driverModel");
+const crypto = require("crypto")
+
 const stripe = require("stripe")(
   "sk_test_51OEnDEE7CJNVLFNHoP5cSxNylu7FnRkAKN1pXTip35CrjKIBmc2CQQz8abdv57gtfRQmNZJlaH5z0KQwg5lQ7nwV006n7WEbsr"
 );
 const bcrypt = require("bcrypt");
 const SSLCommerzPayment = require("sslcommerz-lts");
 const { ObjectId } = require('mongodb');
+const { generateConfirmationLink } = require("../utils/registrationLinkUtils");
 const store_id = process.env.STORE_ID;
 const store_passwd = process.env.STORE_PASSWORD;
 const is_live = false; //true for live, false foe sandbox
@@ -44,6 +47,15 @@ exports.registration = async (req, res) => {
       password: hashedPassword,
     });
 
+    const confirmationToken = generateConfirmationLink(newUser._id)
+
+    // Send a confirmation email to the user
+    const emailMessage = `Click here to confirm your account: ${confirmationToken}`
+    const emailSubject = 'RFQ System Account Confirmation'
+    const emailSend = await SendEmailUtils(newUser.email, emailMessage, emailSubject)
+
+    newUser.password = undefined
+
     res.status(201).json({
       status: "success",
       data: newUser,
@@ -56,6 +68,38 @@ exports.registration = async (req, res) => {
   }
 };
 
+//confirm registration
+exports.confirmRegistration = async (req, res, next) => {
+  try {
+    const secretKey = process.env.HASH_SECRET_KEY
+    const encryptedUserId = req.params.userId;
+    const decipher = crypto.createDecipher('aes-256-cbc', secretKey)
+    let decryptedUserId = decipher.update(encryptedUserId, 'hex', 'utf-8')
+    decryptedUserId += decipher.final('utf-8')
+    // console.log('decrypted user id is', decryptedUserId)
+
+    const user = await userModel.findById(decryptedUserId)
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' })
+    }
+
+    user.is_registered = true
+    await user.save()
+
+    user.password = undefined
+
+    res.status(200).json({
+      status: 'success',
+      data: user,
+    })
+  } catch (error) {
+    next(error)
+    console.error(error)
+    res.status(500).json({ status: 'fail', message: error.message })
+  }
+}
+
 //user login
 
 exports.login = async (req, res) => {
@@ -63,7 +107,7 @@ exports.login = async (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
     let currentToken = req.body.currentToken;
-    console.log(currentToken);
+    // console.log(currentToken);
 
     // Find user by email
     const user = await userModel.findOne({ email: email });

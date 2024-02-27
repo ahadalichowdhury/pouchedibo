@@ -1,7 +1,9 @@
 import React from 'react'
 import { Button } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom';
 
 function SenderWaitingPage() {
+  const navigate = useNavigate();
   return (
     <div style={{ height: "100vh" }}>
         <div
@@ -24,7 +26,7 @@ function SenderWaitingPage() {
                 <Button
                   variant="primary"
                   className="mx-auto"
-                  onClick={()=> window.location.href="/"}
+                  onClick={()=> navigate("/")}
                 >
                   Go back HomePage
                 </Button>
