@@ -279,17 +279,17 @@ function Home() {
         .
           <div
             className="home-container"
-            style={{ flexDirection: "column", marginTop: "100px" }}
+            style={{ flexDirection: "column", marginTop: "0px" }}
           >
             <h2>Find Your Travel Route</h2>
             <p>You can input your location or choose from the map</p>
             <div style={{ display: "flex" }}>
               <div
-                style={{ width: "140%", height: "600px" }}
+                style={{ width: "100%", height: "400px" }}
                 ref={mapContainer}
               >
-                When you think of maps, you likely don’t think much about text.
-                In Lesson One, we defined graphicacy—the skill needed to
+                When you think of maps, you likely don’t think much about text.<br/>
+                In Lesson One, we defined graphicacy—the skill needed to <br/>
                 interpret that which cannot be communicated by text or numbers
                 alone—as
               </div>
