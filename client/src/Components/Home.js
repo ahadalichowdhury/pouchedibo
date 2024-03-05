@@ -64,8 +64,8 @@ function Home() {
         }
       )
       .then((res) => {
-        console.log(res);
-        console.log(res.data);
+        // console.log(res);
+        // console.log(res.data);
         localStorage.setItem("startLocation", startPoint);
         localStorage.setItem("endLocation", endPoint);
         navigate("/carList");
@@ -84,7 +84,7 @@ function Home() {
           price,
         })
         .then((result) => {
-          console.log(result);
+          // console.log(result);
           successToast("Ride request approved successfully");
           setTimeout(() => {
             window.location.replace(result.data.url);
@@ -101,7 +101,7 @@ function Home() {
         { driverId }
       );
       if (response.data.status === "success") {
-        console.log("Ride request declined");
+        console.errorToast("Ride request declined");
         setTimeout(() => {
           navigate("/");
         }, 2000);
@@ -121,13 +121,15 @@ function Home() {
 
   useEffect(() => {
     const loadMap = async () => {
+      if (!mapContainer.current) return; // Check if mapContainer is initialized
+
       mapboxgl.accessToken =
         "pk.eyJ1IjoiYWhhZGFsaWNob3dkaHVyeSIsImEiOiJjbHNkOW4wZ3owb2huMmlwYzlrMjhtN3JsIn0.osikVK11OS5BL6rK8ZKhYg";
 
       const newMap = new mapboxgl.Map({
         container: mapContainer.current,
         style: "mapbox://styles/mapbox/streets-v11",
-        center: [90.4113, 23.8103], // Default center
+        center: [90.4113, 23.8103],
         zoom: 7,
       });
 
@@ -163,7 +165,7 @@ function Home() {
         map.remove();
       }
     };
-  }, []);
+  }, [mapContainer.current]); 
 
   // Function to get address from coordinates
   const getAddressFromCoordinates = async (coordinates) => {
@@ -177,8 +179,8 @@ function Home() {
     return "Unknown";
   };
 
-  console.log(startPoint);
-  console.log(endPoint);
+  // console.log(startPoint);
+  // console.log(endPoint);
 
   useEffect(() => {
     if (startingPoint) {
@@ -274,9 +276,8 @@ function Home() {
       );
     } else {
       return (
-
         <>
-        .
+  
           <div
             className="home-container"
             style={{ flexDirection: "column", marginTop: "0px" }}
@@ -288,9 +289,9 @@ function Home() {
                 style={{ width: "100%", height: "400px" }}
                 ref={mapContainer}
               >
-                When you think of maps, you likely don’t think much about text.<br/>
-                In Lesson One, we defined graphicacy—the skill needed to <br/>
-                interpret that which cannot be communicated by text or numbers
+                When you think of maps, you likely don’t think much about text.
+                In Lesson One, we defined graphicacy—the skill needed to 
+                interpret that which <br/> cannot be communicated by text or numbers
                 alone—as
               </div>
             </div>
@@ -307,20 +308,34 @@ function Home() {
   } else {
     return (
       <>
-       <p style={{width: "100%",textAlign: "center", fontSize: "28px", fontWeight: "600", backgroundColor: "#FF5C5C"}}>&#9888; You are Not verifed. Please Varify first</p>
+        <p
+          style={{
+            width: "100%",
+            textAlign: "center",
+            fontSize: "28px",
+            fontWeight: "600",
+            backgroundColor: "#FF5C5C",
+          }}
+        >
+          &#9888; You are Not verifed. Please Varify first
+        </p>
         <div
           className="home-container"
-          style={{ flexDirection: "column", marginTop: "100px" }}
+          style={{ flexDirection: "column", marginTop: "0px" }}
         >
           <h2>Find Your Travel Route</h2>
           <p>You can input your location or choose from the map</p>
           <div style={{ display: "flex" }}>
-            <div style={{ width: "100%", height: "400px" }} ref={mapContainer}>
-              When you think of maps, you likely don’t think much about text. In
-              Lesson One, we defined graphicacy—the skill needed to interpret
-              that which cannot be communicated by text or numbers alone—as
+            <div style={{ width: "100%", height: "300px" }}>
+              After account verification, You can access our full features
             </div>
           </div>
+          <button
+            className="btn w-40 animated fadeInUp float-end btn-primary mt-5"
+            disabled
+          >
+            Next
+          </button>
         </div>
       </>
     );
